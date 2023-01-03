@@ -1,4 +1,4 @@
-<package-name> is a library for ....
+`gdrive-watcher` is a library for watching file updates to a google drive folder.
 
 Set the environment variable for your google service account:
 
@@ -8,14 +8,15 @@ In the service account JSON file, look for "client_email". Add this email addres
 
 Example usage:
 
-```
-python gdrive_watcher/poll.py
-```
-
-or
 
 ```
 python -m gdrive_watcher
+```
+
+or for debugging,
+
+```
+python gdrive_watcher/poll.py 
 ```
 
 Note: there may be a timing issue if your timezone is different from the timezone of your google drive account.
