@@ -7,14 +7,14 @@ with open("README.md") as f:
     long_description = f.read()
 
 setup(
-    name="gbt",
+    name="gdrive-watcher",
     version="0.1",
-    description="A gradient boosted tree library with minimal coding required.",
-    url="https://github.com/zzsi/gbt",
+    description="A utility to watch changes in a google drive folder.",
+    url="https://github.com/zzsi/gdrive-watcher",
     author="Zhangzhang Si",
     author_email="zhangzhang.si@gmail.com",
     license="MIT",
-    packages=["gbt"],
+    packages=["gdrive_watcher"],
     long_description=long_description,
     long_description_content_type="text/markdown",
     python_requires=">=3.6",
