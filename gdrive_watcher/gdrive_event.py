@@ -15,8 +15,8 @@ class FileEventType(enum.Enum):
 
 @dataclass
 class GDriveEvent:
-    """An event that occurred in the watched folder.
-    """
+    """An event that occurred in the watched folder."""
+
     folder_id: str
     file_id: str
     file_name: str
@@ -25,3 +25,8 @@ class GDriveEvent:
     event_datetime: datetime = datetime.now()
     file_created_datetime: datetime = None
     size: int = None
+    mime_type: str = None
+
+    @property
+    def is_folder(self):
+        return self.mime_type == "application/vnd.google-apps.folder"

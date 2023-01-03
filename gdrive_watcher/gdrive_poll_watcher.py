@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Iterable, Optional, List
+from typing import Iterable, List
 import time
 import google.auth
 import google.auth.transport.requests
@@ -12,7 +12,14 @@ from .gdrive_event import GDriveEvent, FileEventType
 
 @dataclass
 class GDrivePollWatcher:
+    """
+    Watch a Google Drive folder for changes.
+
+    TODO: Add support for the user to set the time zone.
+    """
+
     folder_id: str  # Google drive folder ID. If None, watch all folders.
+    file_only: bool = False  # If True, only watch files, not folders.
     watch_start_time: datetime = datetime.now()
     sleep_time: int = 10  # Time (in seconds) to sleep between checks for changes
     # For authentication.
@@ -28,7 +35,19 @@ class GDrivePollWatcher:
         service = self._authenticate()
         since = self.watch_start_time
         while True:
-            recently_modified_files = self._get_folder_content(service, since)
+            recently_modified_files = list(
+                self._get_recently_modified_files_recursively(
+                    service, modified_since=since, folder_id=self.folder_id
+                )
+            )
+            if self.file_only:
+                recently_modified_files = [
+                    file
+                    for file in recently_modified_files
+                    if not file["mimeType"].startswith(
+                        "application/vnd.google-apps.folder"
+                    )
+                ]
             for file in recently_modified_files:
                 yield GDriveEvent(
                     folder_id=self.folder_id,
@@ -44,7 +63,8 @@ class GDrivePollWatcher:
                     file_created_datetime=datetime.strptime(
                         file["createdTime"], "%Y-%m-%dT%H:%M:%S.%fZ"
                     ),
-                    size=file["size"],
+                    size=file.get("size"),
+                    mime_type=file.get("mimeType"),
                 )
             if recently_modified_files:
                 modified_time_for_most_recent_file = datetime.strptime(
@@ -59,8 +79,25 @@ class GDrivePollWatcher:
         self.service = googleapiclient.discovery.build("drive", "v3", credentials=creds)
         return self.service
 
-    def _get_folder_content(
-        self, service, modified_since, files_only=True
+    def _get_recently_modified_files_recursively(
+        self, service, folder_id: str, modified_since: datetime
+    ) -> Iterable[dict]:
+        children = self._get_recently_modified_files(
+            service,
+            modified_since=modified_since,
+            folder_id=folder_id,
+            files_only=False,
+        )
+        for child in children:
+            if child["mimeType"] == "application/vnd.google-apps.folder":
+                yield from self._get_recently_modified_files_recursively(
+                    service, folder_id=child["id"], modified_since=modified_since
+                )
+            else:
+                yield child
+
+    def _get_recently_modified_files(
+        self, service, folder_id: str, modified_since: datetime, files_only=True
     ) -> List[dict]:
         """
         Example output:
@@ -76,7 +113,7 @@ class GDrivePollWatcher:
                 response = (
                     service.files()
                     .list(
-                        q="",  # f"'{folder_id}' in parents",
+                        q=f"'{folder_id}' in parents",
                         spaces="drive",
                         fields="nextPageToken, "
                         "files(id, modifiedTime, name, size, parents, createdTime, mimeType)",
@@ -93,11 +130,11 @@ class GDrivePollWatcher:
                         file["modifiedTime"], "%Y-%m-%dT%H:%M:%S.%fZ"
                     )
                     if modified_time > modified_since:
-                        if (
-                            files_only
-                            and file["mimeType"] != "application/vnd.google-apps.folder"
-                        ):
-                            assert "parents" in file, str(file)
+                        if files_only:
+                            if file["mimeType"] != "application/vnd.google-apps.folder":
+                                assert "parents" in file, str(file)
+                                files.append(file)
+                        else:
                             files.append(file)
                     else:
                         reached_start_time = True

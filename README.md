@@ -12,3 +12,10 @@ Example usage:
 python gdrive_watcher/poll.py
 ```
 
+or
+
+```
+python -m gdrive_watcher
+```
+
+Note: there may be a timing issue if your timezone is different from the timezone of your google drive account.
