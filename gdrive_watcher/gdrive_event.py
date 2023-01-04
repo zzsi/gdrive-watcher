@@ -20,7 +20,7 @@ class GDriveEvent:
     folder_id: str
     file_id: str
     file_name: str
-    relative_path: List[str]  # Path relative to the watched folder
+    relative_path: str  # Path relative to the watched folder
     event_type: FileEventType
     event_datetime: datetime = datetime.now()
     file_created_datetime: datetime = None

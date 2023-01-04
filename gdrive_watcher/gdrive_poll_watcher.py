@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from datetime import datetime
+import os
 from typing import Iterable, List
 import time
 import google.auth
@@ -19,6 +20,7 @@ class GDrivePollWatcher:
     """
 
     folder_id: str  # Google drive folder ID. If None, watch all folders.
+    id: str = str(int(time.time() * 1000))  # ID of the watched folder.
     file_only: bool = False  # If True, only watch files, not folders.
     watch_start_time: datetime = datetime.now()
     sleep_time: int = 10  # Time (in seconds) to sleep between checks for changes
@@ -168,4 +170,6 @@ class GDrivePollWatcher:
                 continue
             parent = service.files().get(fileId=parent_id, fields="name").execute()
             relative_path.append(parent["name"])
-        return relative_path + [file_name]
+        relative_path = relative_path + [file_name]
+        relative_path = os.path.join(*relative_path)
+        return relative_path

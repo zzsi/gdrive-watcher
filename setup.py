@@ -8,7 +8,7 @@ with open("README.md") as f:
 
 setup(
     name="gdrive-watcher",
-    version="0.1.1",
+    version="0.1.2",
     description="A utility to watch changes in a google drive folder.",
     url="https://github.com/zzsi/gdrive-watcher",
     author="Zhangzhang Si",
