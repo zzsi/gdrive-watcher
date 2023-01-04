@@ -10,12 +10,28 @@ In the service account JSON file, look for "client_email". Add this email addres
 
 Example usage:
 
+```python
+from datetime import datetime, timedelta
+from dotenv import load_dotenv
+import os
+from gdrive_watcher import GDriveWatcher
+from gdrive_watcher.gdrive_reader import GDriveReader
 
-```
-python -m gdrive_watcher
+load_dotenv()
+
+folder_id = os.environ["FOLDER_ID"]
+watcher = GDriveWatcher(
+    folder_id=folder_id,
+    watch_start_time=datetime.now() - timedelta(days=5), # feel free to change this
+)
+reader = GDriveReader()
+for event in watcher.watch():
+    print("-", event)
+    if not event.is_folder:
+        print("content:", reader.read_by_file_id(event.file_id))
 ```
 
-or for debugging,
+For debugging, run
 
 ```
 python gdrive_watcher/poll.py 
