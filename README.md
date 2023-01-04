@@ -1,5 +1,7 @@
 `gdrive-watcher` is a library for watching file updates to a google drive folder.
 
+[![PyPI version](https://badge.fury.io/py/gdrive-watcher.svg)](https://badge.fury.io/py/gdrive-watcher)
+
 Set the environment variable for your google service account:
 
 export GOOGLE_APPLICATION_CREDENTIALS="<path to your google service account file>.json"
